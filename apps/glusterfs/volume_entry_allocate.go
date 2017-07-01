@@ -21,9 +21,7 @@ import (
 func (v *VolumeEntry) allocBricksInCluster(db *bolt.DB,
 	allocator Allocator,
 	cluster string,
-	gbsize int) ([]*BrickEntry, error) {
-
-	size := uint64(gbsize) * GB
+	size uint64) ([]*BrickEntry, error) {
 
 	// Setup a brick size generator
 	// Note: subsequent calls to gen need to return decreasing

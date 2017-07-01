@@ -485,10 +485,10 @@ func (v *VolumeEntry) Destroy(db *bolt.DB, executor executors.Executor) error {
 func (v *VolumeEntry) Expand(db *bolt.DB,
 	executor executors.Executor,
 	allocator Allocator,
-	sizeGB int) (e error) {
+	size uint64) (e error) {
 
 	// Allocate new bricks in the cluster
-	brick_entries, err := v.allocBricksInCluster(db, allocator, v.Info.Cluster, sizeGB)
+	brick_entries, err := v.allocBricksInCluster(db, allocator, v.Info.Cluster, size)
 	if err != nil {
 		return err
 	}
@@ -539,7 +539,7 @@ func (v *VolumeEntry) Expand(db *bolt.DB,
 	}
 
 	// Increase the recorded volume size
-	v.Info.Size += sizeGB
+	v.Info.Size += size
 
 	// Save volume entry
 	err = db.Update(func(tx *bolt.Tx) error {

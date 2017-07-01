@@ -129,12 +129,12 @@ func (a *App) VolumeCreate(w http.ResponseWriter, r *http.Request) {
 
 	vol := NewVolumeEntryFromRequest(&msg)
 
-	if uint64(msg.Size)*GB < vol.Durability.MinVolumeSize() {
-		http.Error(w, fmt.Sprintf("Requested volume size (%v GB) is "+
+	if msg.Size < vol.Durability.MinVolumeSize() {
+		http.Error(w, fmt.Sprintf("Requested volume size (%v KB) is "+
 			"smaller than the minimum supported volume size (%v)",
 			msg.Size, vol.Durability.MinVolumeSize()),
 			http.StatusBadRequest)
-		logger.LogError(fmt.Sprintf("Requested volume size (%v GB) is "+
+		logger.LogError(fmt.Sprintf("Requested volume size (%v KB) is "+
 			"smaller than the minimum supported volume size (%v)",
 			msg.Size, vol.Durability.MinVolumeSize()))
 		return

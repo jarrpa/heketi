@@ -241,18 +241,16 @@ func (a *App) setAdvSettings() {
 		BrickMaxNum = a.conf.BrickMaxNum
 	}
 	if a.conf.BrickMaxSize != 0 {
-		logger.Info("Adv: Max brick size %v GB", a.conf.BrickMaxSize)
+		logger.Info("Adv: Max brick size %v KB", a.conf.BrickMaxSize)
 
 		// From volume_entry.go
-		// Convert to KB
-		BrickMaxSize = uint64(a.conf.BrickMaxSize) * 1024 * 1024
+		BrickMaxSize = a.conf.BrickMaxSize
 	}
 	if a.conf.BrickMinSize != 0 {
-		logger.Info("Adv: Min brick size %v GB", a.conf.BrickMinSize)
+		logger.Info("Adv: Min brick size %v KB", a.conf.BrickMinSize)
 
 		// From volume_entry.go
-		// Convert to KB
-		BrickMinSize = uint64(a.conf.BrickMinSize) * 1024 * 1024
+		BrickMinSize = a.conf.BrickMinSize
 	}
 }
 

@@ -147,8 +147,8 @@ type VolumeDurabilityInfo struct {
 }
 
 type VolumeCreateRequest struct {
-	// Size in GB
-	Size                 int                  `json:"size"`
+	// Size in KB
+	Size                 uint64               `json:"size"`
 	Clusters             []string             `json:"clusters,omitempty"`
 	Name                 string               `json:"name"`
 	Durability           VolumeDurabilityInfo `json:"durability,omitempty"`
@@ -183,7 +183,7 @@ type VolumeListResponse struct {
 }
 
 type VolumeExpandRequest struct {
-	Size int `json:"expand_size"`
+	Size uint64 `json:"expand_size"`
 }
 
 // Constructors

@@ -14,6 +14,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 
 	client "github.com/heketi/heketi/client/api/go-client"
@@ -23,7 +25,7 @@ import (
 )
 
 var (
-	size                 int
+	size                 string
 	volname              string
 	durability           string
 	replica              int
@@ -32,7 +34,7 @@ var (
 	gid                  int64
 	snapshotFactor       float64
 	clusters             string
-	expandSize           int
+	expandSize           string
 	id                   string
 	kubePvFile           string
 	kubePvEndpoint       string
@@ -48,8 +50,8 @@ func init() {
 	volumeCommand.AddCommand(volumeInfoCommand)
 	volumeCommand.AddCommand(volumeListCommand)
 
-	volumeCreateCommand.Flags().IntVar(&size, "size", -1,
-		"\n\tSize of volume in GB")
+	volumeCreateCommand.Flags().StringVar(&size, "size", "",
+		"\n\tSize of volume in KB, MB, GB, or TB (default GB)")
 	volumeCreateCommand.Flags().Int64Var(&gid, "gid", 0,
 		"\n\tOptional: Initialize volume with the specified group id")
 	volumeCreateCommand.Flags().StringVar(&volname, "name", "",
@@ -90,8 +92,8 @@ func init() {
 			"\n\tKubernetes with the name provided.")
 	volumeCreateCommand.Flags().StringVar(&kubePvEndpoint, "persistent-volume-endpoint", "",
 		"\n\tOptional: Endpoint name for the persistent volume")
-	volumeExpandCommand.Flags().IntVar(&expandSize, "expand-size", -1,
-		"\n\tAmount in GB to add to the volume")
+	volumeExpandCommand.Flags().StringVar(&expandSize, "expand-size", "",
+		"\n\tAmount in KB, MB, or GB (default GB) to add to the volume")
 	volumeExpandCommand.Flags().StringVar(&id, "volume", "",
 		"\n\tId of volume to expand")
 	volumeCreateCommand.SilenceUsage = true
@@ -136,8 +138,36 @@ var volumeCreateCommand = &cobra.Command{
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Check volume size
-		if size == -1 {
+		if size == "" {
 			return errors.New("Missing volume size")
+		}
+
+		sizeRegex, _ := regexp.Compile(`^([0-9]+)(.*)$`)
+		sizeSlice := sizeRegex.FindStringSubmatch(size)
+		sizeNum := strconv.Atoi(sizeSlice[1])
+		sizeUnit := strings.ToUpper(sizeSlize[2])
+
+		if sizeNum < 1 {
+			fmt.Fprintf(stderr, "Invalid size value '%v'\n", sizeNum)
+			return fmt.Errorf("Invalid size value")
+		}
+
+		if sizeUnit == "" {
+			sizeUnit = "G"
+		}
+
+		switch sizeUnit[0] {
+		case "T":
+			sizeUnit = TB
+		case "G":
+			sizeUnit = GB
+		case "M":
+			sizeUnit = MB
+		case "K":
+			sizeUnit = KB
+		default:
+			fmt.Fprintf(stderr, "Invalid size unit '%v'\n", sizeUnit)
+			return fmt.Errorf("Invalid size unit")
 		}
 
 		if kubePv && kubePvEndpoint == "" {
@@ -148,7 +178,7 @@ var volumeCreateCommand = &cobra.Command{
 
 		// Create request blob
 		req := &api.VolumeCreateRequest{}
-		req.Size = size
+		req.Size = sizeNum * sizeUnit
 		req.Durability.Type = api.DurabilityType(durability)
 		req.Durability.Replicate.Replica = replica
 		req.Durability.Disperse.Data = disperseData
@@ -266,8 +296,36 @@ var volumeExpandCommand = &cobra.Command{
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Check volume size
-		if expandSize == -1 {
+		if expandSize == "" {
 			return errors.New("Missing volume amount to expand")
+		}
+
+		sizeRegex, _ := regexp.Compile(`^([0-9]+)(.*)$`)
+		sizeSlice := sizeRegex.FindStringSubmatch(expandSize)
+		sizeNum := strconv.Atoi(sizeSlice[1])
+		sizeUnit := strings.ToUpper(sizeSlize[2])
+
+		if sizeNum < 1 {
+			fmt.Fprintf(stderr, "Invalid expand-size value '%v'\n", sizeNum)
+			return fmt.Errorf("Invalid expand-size value")
+		}
+
+		if sizeUnit == "" {
+			sizeUnit = "G"
+		}
+
+		switch sizeUnit[0] {
+		case "T":
+			sizeUnit = TB
+		case "G":
+			sizeUnit = GB
+		case "M":
+			sizeUnit = MB
+		case "K":
+			sizeUnit = KB
+		default:
+			fmt.Fprintf(stderr, "Invalid expand-size unit '%v'\n", sizeUnit)
+			return fmt.Errorf("Invalid expand-size unit")
 		}
 
 		if id == "" {
@@ -276,7 +334,7 @@ var volumeExpandCommand = &cobra.Command{
 
 		// Create request
 		req := &api.VolumeExpandRequest{}
-		req.Size = expandSize
+		req.Size = sizeNum * sizeUnit
 
 		// Create client
 		heketi := client.NewClient(options.Url, options.User, options.Key)

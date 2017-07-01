@@ -36,7 +36,7 @@ const (
 	HeketiStorageSecretName   = "heketi-storage-secret"
 	HeketiStorageVolTagName   = "heketi-storage"
 
-	HeketiStorageVolumeSize    = 2
+	HeketiStorageVolumeSize    = uint64(2048)
 	HeketiStorageVolumeSizeStr = "2Gi"
 )
 
