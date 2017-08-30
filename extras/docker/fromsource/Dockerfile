@@ -9,7 +9,7 @@ LABEL description="Development build"
 ENV BUILD_HOME=/build
 ENV GOPATH=$BUILD_HOME/golang
 ENV PATH=$GOPATH/bin:$PATH
-ENV HEKETI_BRANCH="master"
+ENV HEKETI_BRANCH="jarrpa-dev"
 
 # install dependencies, build and cleanup
 RUN mkdir $BUILD_HOME $GOPATH && \
@@ -18,7 +18,7 @@ RUN mkdir $BUILD_HOME $GOPATH && \
     dnf -q -y clean all && \
     mkdir -p $GOPATH/src/github.com/heketi && \
     cd $GOPATH/src/github.com/heketi && \
-    git clone -b $HEKETI_BRANCH https://github.com/heketi/heketi.git && \
+    git clone -b $HEKETI_BRANCH https://github.com/jarrpa/heketi.git && \
     cd $GOPATH/src/github.com/heketi/heketi && \
     glide install -v && make && \
     cp heketi /usr/bin/heketi && \
